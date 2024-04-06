@@ -13,9 +13,9 @@ namespace TechTaskNotissimus.Services;
 
 public class ProductInfoService : IProductInfoService
 {
-    public ProductInfoService(string configCity)
+    public ProductInfoService(string city)
     {
-        ConfigCity = configCity;
+        ConfigCity = city;
     }
 
     public string ConfigCity { get; set; }
