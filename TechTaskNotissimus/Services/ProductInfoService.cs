@@ -34,27 +34,26 @@ public class ProductInfoService : IProductInfoService
         }
     }
 
-    public List<string> ExtractProductLinks(IHtmlDocument document)
+    public async Task<List<string>> ExtractProductLinks(IHtmlDocument document)
     {
         var productLinksHandler = new ProductLinksHandler();
-        productLinksHandler.Handle(document);
-        return productLinksHandler.ProductLinks;
+        return await productLinksHandler.Handle(document);
     }
 
-    public string GetProductName(IHtmlDocument document)
+    public Task<string> GetProductName(IHtmlDocument document)
     {
-        return document.QuerySelector(".product-page__header")?.TextContent.Trim();
+        return Task.FromResult(document.QuerySelector(".product-page__header")?.TextContent.Trim());
     }
 
-    public int GetArticul(IHtmlDocument document)
+    public Task<int> GetArticul(IHtmlDocument document)
     {
         var articulElement = document.QuerySelector(".product-page__article.js-copy-article");
         var articulText = articulElement?.TextContent.Trim();
         var articulNumberText = Regex.Match(articulText, @"\d+").Value;
-        return Convert.ToInt32(articulNumberText);
+        return Task.FromResult(Convert.ToInt32(articulNumberText));
     }
 
-    public (int oldPrice, int newPrice) GetPrices(IHtmlDocument document)
+    public async Task<(int oldPrice, int newPrice)> GetPrices(IHtmlDocument document)
     {
         var oldPrice = 0;
         var newPrice = 0;
@@ -63,22 +62,22 @@ public class ProductInfoService : IProductInfoService
 
         if (oldPriceElement != null && newPriceElement != null)
         {
-            oldPrice = ExtractPrice(oldPriceElement.TextContent.Trim());
-            newPrice = ExtractPrice(newPriceElement.TextContent.Trim());
+            oldPrice = await ExtractPrice(oldPriceElement.TextContent.Trim());
+            newPrice = await ExtractPrice(newPriceElement.TextContent.Trim());
         }
         else
         {
             var priceElement = document.QuerySelector(".product-buy__price");
             if (priceElement != null)
             {
-                oldPrice = newPrice = ExtractPrice(priceElement.TextContent.Trim());
+                oldPrice = newPrice = await ExtractPrice(priceElement.TextContent.Trim());
             }
         }
 
         return (oldPrice, newPrice);
     }
 
-    private static int ExtractPrice(string priceText)
+    private Task<int> ExtractPrice(string priceText)
     {
         var priceDigitsMatch = Regex.Match(priceText, @"\d+(\s\d+)?");
         if (priceDigitsMatch.Success)
@@ -86,26 +85,26 @@ public class ProductInfoService : IProductInfoService
             var priceDigits = Regex.Replace(priceDigitsMatch.Value, @"\s", "");
             if (!string.IsNullOrEmpty(priceDigits) && int.TryParse(priceDigits, out int price))
             {
-                return price;
+                return Task.FromResult(price);
             }
         }
 
-        return 0;
+        return Task.FromResult(0);
     }
 
-    public double GetRating(IHtmlDocument document)
+    public Task<double> GetRating(IHtmlDocument document)
     {
         var ratingElement = document.QuerySelector(".rating-stars__value");
         var ratingText = ratingElement?.TextContent.Trim();
         if (double.TryParse(ratingText, out double rating))
         {
-            return rating;
+            return Task.FromResult(rating);
         }
 
-        return 0;
+        return Task.FromResult<double>(0);
     }
 
-    public float GetVolume(IHtmlDocument document)
+    public Task<float> GetVolume(IHtmlDocument document)
     {
         var volumeLink =
             document.QuerySelector(
@@ -114,20 +113,20 @@ public class ProductInfoService : IProductInfoService
         {
             var volumeText = volumeLink.TextContent.Trim();
             var volume = float.Parse(volumeText.Substring(0, volumeText.Length - 2));
-            return volume;
+            return Task.FromResult(volume);
         }
 
-        return 0;
+        return Task.FromResult<float>(0);
     }
 
-    public string GetCityName(IHtmlDocument document)
+    public Task<string> GetCityName(IHtmlDocument document)
     {
         if (string.Compare(ConfigCity, "Москва", StringComparison.Ordinal) == 0)
         {
             var cityLink =
                 document.QuerySelector(
                     "a.location__link[data-autotest-target='header-location-dropdown-city'][data-autotest-target-id='header-location-dropdown-city-1']");
-            return cityLink?.TextContent.Trim();
+            return Task.FromResult(cityLink?.TextContent.Trim());
         }
 
         if (string.Compare(ConfigCity, "Сочи", StringComparison.Ordinal) == 0)
@@ -135,10 +134,10 @@ public class ProductInfoService : IProductInfoService
             var cityLink =
                 document.QuerySelector(
                     "a.location__link[data-autotest-target='header-location-dropdown-city'][data-autotest-target-id='header-location-dropdown-city-3']");
-            return cityLink?.TextContent.Trim();
+            return Task.FromResult(cityLink?.TextContent.Trim());
         }
 
-        return "";
+        return Task.FromResult("");
     }
 
     public async Task<IEnumerable<ProductBase>> GetProductsInfo(IEnumerable<string> productLinks,
@@ -149,7 +148,7 @@ public class ProductInfoService : IProductInfoService
     }
 
 
-    public List<string> GetImageUrls(IHtmlDocument document)
+    public Task<List<string>> GetImageUrls(IHtmlDocument document)
     {
         var imageUrls = new List<string>();
         var imageElements = document.QuerySelectorAll("img.product-slider__slide-img");
@@ -168,7 +167,7 @@ public class ProductInfoService : IProductInfoService
             }
         }
 
-        return imageUrls;
+        return Task.FromResult(imageUrls);
     }
 
     private async Task<ProductBase> GetProductInfo(string url)
@@ -177,13 +176,13 @@ public class ProductInfoService : IProductInfoService
         var context = BrowsingContext.New(config);
         var document = await context.OpenAsync(url) as IHtmlDocument;
 
-        var productName = GetProductName(document);
-        var articul = GetArticul(document);
-        var prices = GetPrices(document);
-        var rating = GetRating(document);
-        var volume = GetVolume(document);
-        var cityName = GetCityName(document);
-        var imageUrls = GetImageUrls(document);
+        var productName = await GetProductName(document);
+        var articul = await GetArticul(document);
+        var prices = await GetPrices(document);
+        var rating = await GetRating(document);
+        var volume = await GetVolume(document);
+        var cityName = await GetCityName(document);
+        var imageUrls = await GetImageUrls(document);
 
         var wine = new WineBuilder()
             .SetName(productName)

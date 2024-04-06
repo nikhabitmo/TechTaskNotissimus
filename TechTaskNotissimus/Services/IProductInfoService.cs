@@ -9,14 +9,14 @@ namespace TechTaskNotissimus.Services;
 public interface IProductInfoService
 {
     public Task<IEnumerable<ProductBase>> GetProductsInfo(IEnumerable<string> productLinks, SemaphoreSlim semaphore);
-    public List<string> ExtractProductLinks(IHtmlDocument document);
+    public Task<List<string>> ExtractProductLinks(IHtmlDocument document);
     protected Task<ProductBase> ProcessProductInfoAsync(string url, SemaphoreSlim semaphore);
 
-    protected string GetProductName(IHtmlDocument document);
-    protected int GetArticul(IHtmlDocument document);
-    protected (int oldPrice, int newPrice) GetPrices(IHtmlDocument document);
-    protected double GetRating(IHtmlDocument document);
-    protected float GetVolume(IHtmlDocument document);
-    protected string GetCityName(IHtmlDocument document);
-    protected List<string> GetImageUrls(IHtmlDocument document);
+    protected Task<string> GetProductName(IHtmlDocument document);
+    protected Task<int> GetArticul(IHtmlDocument document);
+    protected Task<(int oldPrice, int newPrice)> GetPrices(IHtmlDocument document);
+    protected Task<double> GetRating(IHtmlDocument document);
+    protected Task<float> GetVolume(IHtmlDocument document);
+    protected Task<string> GetCityName(IHtmlDocument document);
+    protected Task<List<string>> GetImageUrls(IHtmlDocument document);
 }

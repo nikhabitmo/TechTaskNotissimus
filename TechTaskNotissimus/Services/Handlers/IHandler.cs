@@ -4,5 +4,5 @@ namespace TechTaskNotissimus.Services.Handlers;
 
 public interface IHandler<T>
 {
-    public void Handle(IHtmlDocument document);
+    public Task<T> Handle(IHtmlDocument document);
 }

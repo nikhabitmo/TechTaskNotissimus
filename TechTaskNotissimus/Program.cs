@@ -1,4 +1,8 @@
-﻿using OpenQA.Selenium;
+﻿using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using AngleSharp.Html.Parser;
 using Newtonsoft.Json;
@@ -32,18 +36,19 @@ public static class Program
 
 
         Console.WriteLine("Getting product links...");
-        var productLinks = productInfoService.ExtractProductLinks(document);
+        var productLinks = await productInfoService.ExtractProductLinks(document);
         Console.WriteLine("Product links were extracted.\n");
 
 
         Console.WriteLine("Collecting data... (it may take a few minutes)");
         var products = await productInfoService.GetProductsInfo(productLinks, semaphore);
+        Console.WriteLine(products.ToList().Count);
         Console.WriteLine("Data was collected.\n");
 
         
         var json = JsonConvert.SerializeObject(products, Formatting.Indented);
         Console.WriteLine("Saving to json...");
-        await File.WriteAllTextAsync("products.json", json);
+        await File.WriteAllTextAsync($"WinesTest.json", json);
         Console.WriteLine("Saved to json.");
     }
 
@@ -88,7 +93,7 @@ public static class Program
         // scrolling in order to load /page1, /page2, etc.
         Console.WriteLine("Loading all goods... Just chill for a minute");
         var scrollDown = true;
-        var endTime = DateTime.Now.AddSeconds(60);
+        var endTime = DateTime.Now.AddSeconds(69);
         while (DateTime.Now < endTime)
         {
             if (scrollDown)
