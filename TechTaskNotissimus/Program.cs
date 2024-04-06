@@ -48,7 +48,7 @@ public static class Program
         
         var json = JsonConvert.SerializeObject(products, Formatting.Indented);
         Console.WriteLine("Saving to json...");
-        await File.WriteAllTextAsync($"WinesTest.json", json);
+        await File.WriteAllTextAsync($"Wines{city}.json", json);
         Console.WriteLine("Saved to json.");
     }
 
